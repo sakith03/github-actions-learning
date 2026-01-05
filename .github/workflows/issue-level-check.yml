@@ -19,8 +19,21 @@ jobs:
         with:
           script: |
             const requiredVariants = ["my lavel", "my level"];
-            const labels = (context.payload.issue.labels || []).map(label => label.name.toLowerCase());
-            const hasRequired = requiredVariants.some(name => labels.includes(name));
+            const labels = (context.payload.issue.labels || []).map(label => label.name.toLowerCase().trim());
+
+            const matchesRequired = labelName => {
+              return requiredVariants.some(variant => {
+                if (labelName === variant) {
+                  return true;
+                }
+
+                const prefix = `${variant}:`;
+                const spaced = `${variant} `;
+                return labelName.startsWith(prefix) || labelName.startsWith(spaced);
+              });
+            };
+
+            const hasRequired = labels.some(matchesRequired);
             core.setOutput("has-required-label", hasRequired ? "true" : "false");
 
       - name: Comment completion level warning
