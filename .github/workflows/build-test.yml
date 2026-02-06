@@ -1,5 +1,4 @@
 name: Build and Test
-
 on:
   push:
     branches: [main, develop]
@@ -37,7 +36,6 @@ jobs:
         with:
           node-version: ${{ matrix.node-version }}
           cache: 'npm'
-          cache-dependency-path: sample-app/package-lock.json
       
       - name: Install dependencies
         working-directory: ./sample-app
@@ -51,15 +49,16 @@ jobs:
       - name: Build application
         working-directory: ./sample-app
         run: npm run build
-
+        
       - name: Create artifact
+        working-directory: ./sample-app
         run: echo "Build output" > output.txt
-
+        
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
           name: build-output-${{ matrix.node-version }}
-          path: output.txt
+          path: sample-app/output.txt
       
       - name: Run tests
         working-directory: ./sample-app
@@ -82,7 +81,7 @@ jobs:
           else
             echo "⚠️ No coverage report found"
           fi
-
+          
   lint-check:
     name: Lint Check
     runs-on: ubuntu-latest
@@ -94,7 +93,6 @@ jobs:
         with:
           node-version: '18'
           cache: 'npm'
-          cache-dependency-path: sample-app/package-lock.json
       
       - working-directory: ./sample-app
         run: npm ci
@@ -103,7 +101,7 @@ jobs:
         working-directory: ./sample-app
         run: npm run lint
         continue-on-error: true
-
+        
   test-summary:
     name: Test Summary
     runs-on: ubuntu-latest
