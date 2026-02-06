@@ -72,6 +72,7 @@ jobs:
             echo "✅ Coverage report generated"
           else
             echo "⚠️ No coverage report found"
+          fi
 
   lint-check:
     name: Lint Check
