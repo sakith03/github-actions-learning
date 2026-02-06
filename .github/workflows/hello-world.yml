@@ -1,5 +1,4 @@
 name: Hello World Workflow
-
 on:
   push:
     branches: [main, develop]
@@ -13,12 +12,13 @@ jobs:
     steps:
       - name: Print hello message
         run: echo "🎉 Hello from GitHub Actions!"
-
+      
       - name: Access secret
         run: |
-          echo "Secret length: ${#{{ secrets.TEST_SECRET }}}"
+          SECRET="${{ secrets.TEST_SECRET }}"
+          echo "Secret length: ${#SECRET}"
       
-      - name: Print current time  //prints the current time
+      - name: Print current time
         run: date
       
       - name: Print runner information
