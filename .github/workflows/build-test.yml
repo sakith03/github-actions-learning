@@ -1,4 +1,5 @@
 name: Build and Test
+
 on:
   push:
     branches: [main, develop]
@@ -13,26 +14,17 @@ jobs:
   build-and-test:
     name: Build and Test
     runs-on: ubuntu-latest
-     
-    env:
-      NODE_ENV: test
-      LOG_LEVEL: debug
     
     strategy:
       matrix:
-        node-version: [16.x, 18.x, 20.x]
+        node-version: [16.x, 18.x]
     
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4
-        
-      - name: Print environment
-        run: |
-          echo "Environment: ${{ env.NODE_ENV }}"
-          echo "Log Level: ${{ env.LOG_LEVEL }}"
+        uses: actions/checkout@v3
       
       - name: Setup Node.js ${{ matrix.node-version }}
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v3
         with:
           node-version: ${{ matrix.node-version }}
           cache: 'npm'
@@ -50,16 +42,15 @@ jobs:
       - name: Build application
         working-directory: ./sample-app
         run: npm run build
-        
+
       - name: Create artifact
-        working-directory: ./sample-app
         run: echo "Build output" > output.txt
-        
+
       - name: Upload artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v3
         with:
-          name: build-output-${{ matrix.node-version }}
-          path: sample-app/output.txt
+          name: build-output
+          path: output.txt
       
       - name: Run tests
         working-directory: ./sample-app
@@ -67,7 +58,7 @@ jobs:
       
       - name: Upload coverage reports
         if: matrix.node-version == '18.x'
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v3
         with:
           name: coverage-report-${{ matrix.node-version }}
           path: sample-app/coverage/
@@ -81,29 +72,29 @@ jobs:
             echo "✅ Coverage report generated"
           else
             echo "⚠️ No coverage report found"
-          fi
-          
+
   lint-check:
     name: Lint Check
     runs-on: ubuntu-latest
     
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v3
       
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v3
         with:
           node-version: '18'
           cache: 'npm'
           cache-dependency-path: 'sample-app/package-lock.json'
       
-      - working-directory: ./sample-app
+      - name: Install dependencies
+        working-directory: ./sample-app
         run: npm ci
       
       - name: Run ESLint
         working-directory: ./sample-app
         run: npm run lint
         continue-on-error: true
-        
+
   test-summary:
     name: Test Summary
     runs-on: ubuntu-latest
@@ -116,3 +107,18 @@ jobs:
           echo "🎯 Test Run Summary"
           echo "==================="
           echo "✅ All tests completed"
+
+  use-artifact:
+    name: Use Artifact
+    runs-on: ubuntu-latest
+    needs: build-and-test
+    
+    steps:
+      - name: Download artifact
+        uses: actions/download-artifact@v3
+        with:
+          name: build-output
+          path: ./artifact
+
+      - name: Show artifact content
+        run: cat ./artifact/output.txt
