@@ -1,5 +1,4 @@
 name: Build and Test
-
 on:
   push:
     branches: [main, develop]
@@ -42,14 +41,17 @@ jobs:
       - name: Build application
         working-directory: ./sample-app
         run: npm run build
-
+      
       - name: Create artifact
-        run: echo "Build output" > output.txt
-
+        run: |
+          echo "Build output" > output.txt
+          echo "Node version: ${{ matrix.node-version }}" >> output.txt
+          echo "Build time: $(date)" >> output.txt
+      
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
-          name: build-output
+          name: build-output-${{ matrix.node-version }}
           path: output.txt
       
       - name: Run tests
@@ -115,11 +117,24 @@ jobs:
     needs: build-and-test
     
     steps:
-      - name: Download artifact
+      - name: Download all build artifacts
         uses: actions/download-artifact@v4
         with:
-          name: build-output
-          path: ./artifact
-
-      - name: Show artifact content
-        run: cat ./artifact/output.txt
+          pattern: build-output-*
+          path: ./artifacts
+      
+      - name: Show artifact contents
+        run: |
+          echo "📦 Downloaded artifacts:"
+          find ./artifacts -type f -name "output.txt" -exec echo "---" \; -exec cat {} \;
+      
+      - name: Download specific artifact (Node 18.x)
+        uses: actions/download-artifact@v4
+        with:
+          name: build-output-18.x
+          path: ./specific-artifact
+      
+      - name: Use specific artifact
+        run: |
+          echo "🎯 Using Node 18.x build output:"
+          cat ./specific-artifact/output.txt
