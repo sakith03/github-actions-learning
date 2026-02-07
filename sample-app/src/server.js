@@ -14,7 +14,7 @@ app.get('/', (req, res) => {
     version: '1.0.0'
   });
 });
-
+//this is the added change for task 10
 app.get('/api/hello', (req, res) => {
   const name = req.query.name || 'World';
   res.json({
