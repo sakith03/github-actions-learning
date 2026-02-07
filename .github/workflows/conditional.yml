@@ -1,0 +1,39 @@
+name: Conditional Execution
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main]
+
+jobs:
+  build-and-test:
+    name: Build and Test
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Show current branch
+        run: |
+          echo "Running on branch: ${{ github.ref }}"
+          echo "Event: ${{ github.event_name }}"
+
+      - name: Run tests
+        run: |
+          echo "Running tests..."
+          echo "Tests passed ✓"
+
+      - name: Deploy (main only)
+        if: github.ref == 'refs/heads/main'
+        run: echo "Deploying to production..."
+
+      - name: Deploy to staging (develop only)
+        if: github.ref == 'refs/heads/develop'
+        run: echo "Deploying to staging..."
+
+      - name: Summary
+        run: |
+          echo "Build complete!"
+          echo "Branch: ${{ github.ref_name }}"
